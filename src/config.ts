@@ -13,11 +13,21 @@ const optionalUrl = z.preprocess(
   z.string().url().optional()
 );
 
+const envBoolean = (defaultValue: boolean) =>
+  z.preprocess((v) => {
+    if (typeof v === 'boolean') return v;
+    if (typeof v !== 'string') return defaultValue;
+    const normalized = v.trim().toLowerCase();
+    if (['1', 'true', 'yes', 'on'].includes(normalized)) return true;
+    if (['0', 'false', 'no', 'off'].includes(normalized)) return false;
+    return defaultValue;
+  }, z.boolean());
+
 const envSchema = z.object({
   NODE_ENV: z.string().optional(),
   TZ: z.string().default('Asia/Tokyo'),
-  USE_DUMMY_DATA: z.coerce.boolean().default(true),
-  DRY_RUN: z.coerce.boolean().default(false),
+  USE_DUMMY_DATA: envBoolean(true),
+  DRY_RUN: envBoolean(false),
 
   X_OAUTH2_ACCESS_TOKEN: optionalString,
   X_BEARER_TOKEN: optionalString,
